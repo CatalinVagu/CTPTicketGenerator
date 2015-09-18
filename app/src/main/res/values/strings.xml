@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">CTP Ticket Generator</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="enter_line_number">Enter line number</string>
+    <string name="generate_ticket">Generate ticket!</string>
+</resources>

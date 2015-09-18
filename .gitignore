@@ -41,3 +41,15 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+#AndroidStudio files
+.gradle
+.idea
+gradlew
+gradle
+build
+
+local.properties
+gradlew.bat
+CTPTicketGenerator.iml
+app/app.iml
