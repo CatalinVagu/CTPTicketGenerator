@@ -1,9 +1,7 @@
 package activities;
 
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -19,6 +17,7 @@ import java.util.Date;
 import java.util.Random;
 
 import ctp_ticket_generator.android.andreibacalu.com.ctpticketgenerator.R;
+import tasks.async.InsertSmsAsyncTask;
 
 public class MainActivity extends Activity {
 
@@ -83,19 +82,11 @@ public class MainActivity extends Activity {
     }
 
     private void insertSms() {
-        ContentResolver contentResolver = getContentResolver();
-        insertOutgoingSMS(contentResolver);
-        insertIncommingSMS(contentResolver);
-    }
-
-    private void insertOutgoingSMS(ContentResolver contentResolver) {
-        SmsContainer smsContainer = new SmsContainer("7479", generateInput.getText().toString(), System.currentTimeMillis(), TYPE_OUTGOING);
-        contentResolver.insert(Uri.parse("content://sms"), smsContainer.toContentValues());
-    }
-
-    private void insertIncommingSMS(ContentResolver contentResolver) {
-        SmsContainer smsContainer = new SmsContainer("7479", generateInput.getText().toString(), System.currentTimeMillis(), TYPE_INCOMMING);
-        contentResolver.insert(Uri.parse("content://sms"), smsContainer.toContentValues());
+        InsertSmsAsyncTask insertSmsAsyncTask = new InsertSmsAsyncTask(this);
+        SmsContainer[] smsContainers = new SmsContainer[2];
+        smsContainers[0] = new SmsContainer("7479", generateInput.getText().toString(), System.currentTimeMillis(), TYPE_OUTGOING);
+        smsContainers[1] = new SmsContainer("7479", generateInput.getText().toString(), System.currentTimeMillis(), TYPE_INCOMMING);
+        insertSmsAsyncTask.execute(smsContainers);
     }
 
     @Override
@@ -120,7 +111,7 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    private static class SmsContainer {
+    public static class SmsContainer {
 
         private String address;
         private String lineNumber;
