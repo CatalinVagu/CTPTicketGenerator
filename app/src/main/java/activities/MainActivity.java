@@ -2,7 +2,10 @@ package activities;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Telephony;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -27,16 +30,19 @@ public class MainActivity extends Activity {
     public static final String READ_KEY = "read";
     public static final int READ_VALUE = 1;
     public static final String TYPE_KEY = "type";
-    public static final int TYPE_INCOMMING = 2;
-    public static final int TYPE_OUTGOING = 1;
+    public static final int TYPE_INCOMMING = 1;
+    public static final int TYPE_OUTGOING = 2;
     public static final String BODY_KEY = "body";
     public static final String BODY_VALUE = "Biletul pentru linia %1$s a fost activat. Valabil pana la %2$s in %3$s. Cost total:0.50 EUR+Tva. Cod confirmare:%4$s.";
     public static final long MINS_45 = 45 * 60 * 1000;
     public static final SimpleDateFormat timeformat = new SimpleDateFormat("HH:mm");
     public static final SimpleDateFormat dateformat = new SimpleDateFormat("dd/MM/yyyy");
+    private static final int REQUEST_CODE_SMS_DEFAULT = 11111;
 
     private EditText generateInput;
     private Button generateButton;
+
+    private String defaultSmsApp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,11 +87,35 @@ public class MainActivity extends Activity {
         });
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE_SMS_DEFAULT) {
+            if (resultCode == RESULT_OK) {
+                performInsertAsync();
+            } else {
+                // TODO: some nice UI message
+            }
+        }
+    }
+
     private void insertSms() {
-        InsertSmsAsyncTask insertSmsAsyncTask = new InsertSmsAsyncTask(this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            defaultSmsApp = Telephony.Sms.getDefaultSmsPackage(this);
+            if (!getPackageName().equals(defaultSmsApp)) {
+                Intent intent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
+                intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, getPackageName());
+                startActivityForResult(intent, REQUEST_CODE_SMS_DEFAULT);
+            }
+        } else {
+            performInsertAsync();
+        }
+    }
+
+    private void performInsertAsync() {
+        InsertSmsAsyncTask insertSmsAsyncTask = new InsertSmsAsyncTask(this, defaultSmsApp);
         SmsContainer[] smsContainers = new SmsContainer[2];
-        smsContainers[0] = new SmsContainer("7479", generateInput.getText().toString(), System.currentTimeMillis(), TYPE_OUTGOING);
-        smsContainers[1] = new SmsContainer("7479", generateInput.getText().toString(), System.currentTimeMillis(), TYPE_INCOMMING);
+        smsContainers[0] = new SmsContainer("7479", generateInput.getText().toString().toUpperCase(), System.currentTimeMillis(), TYPE_OUTGOING);
+        smsContainers[1] = new SmsContainer("7479", generateInput.getText().toString().toUpperCase(), System.currentTimeMillis() + 10, TYPE_INCOMMING);
         insertSmsAsyncTask.execute(smsContainers);
     }
 
