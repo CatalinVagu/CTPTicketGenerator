@@ -12,6 +12,29 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+
+        <activity
+            android:name="activities.MainActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SENDTO" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="sms" />
+                <data android:scheme="smsto" />
+                <data android:scheme="mms" />
+                <data android:scheme="mmsto" />
+
+            </intent-filter>
+        </activity>
+
         <receiver
             android:name="kitkat.fake_classes.SmsReceiver"
             android:permission="android.permission.BROADCAST_SMS" >
@@ -28,27 +51,6 @@
                 <data android:mimeType="application/vnd.wap.mms-message" />
             </intent-filter>
         </receiver>
-
-        <activity
-            android:name="activities.MainActivity"
-            android:label="@string/app_name" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-
-                <action android:name="android.intent.action.SEND" />
-                <action android:name="android.intent.action.SENDTO" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="sms" />
-                <data android:scheme="smsto" />
-                <data android:scheme="mms" />
-                <data android:scheme="mmsto" />
-            </intent-filter>
-        </activity>
 
         <service
             android:name="kitkat.fake_classes.HeadlessSmsSendService"

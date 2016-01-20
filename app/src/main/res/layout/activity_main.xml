@@ -20,4 +20,9 @@
         android:layout_height="wrap_content"
         android:text="@string/generate_ticket"/>
 
+    <views.AutofitRecyclerView
+        android:id="@+id/generated_lines"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
 </LinearLayout>

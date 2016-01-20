@@ -2,23 +2,21 @@ package tasks.async;
 
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.provider.Telephony;
 import android.text.TextUtils;
 import android.widget.Toast;
 
-import activities.MainActivity;
 import application.CTPTicketGeneratorApplication;
+import others.SmsContainer;
 
 /**
  * Created by andrei on 19/09/15.
  */
-public class InsertSmsAsyncTask extends AsyncTask<MainActivity.SmsContainer, Void, Void> {
+public class InsertSmsAsyncTask extends AsyncTask<SmsContainer, Void, Void> {
 
     private String defaultSmsApp;
     private ProgressDialog progressDialog;
@@ -35,10 +33,10 @@ public class InsertSmsAsyncTask extends AsyncTask<MainActivity.SmsContainer, Voi
     }
 
     @Override
-    protected Void doInBackground(MainActivity.SmsContainer[] params) {
+    protected Void doInBackground(SmsContainer[] params) {
         ContentResolver contentResolver = context.getContentResolver();
         if (params != null && params.length > 0) {
-            for (MainActivity.SmsContainer smsContainer: params) {
+            for (SmsContainer smsContainer: params) {
                 if (isCancelled()) {
                     return null;
                 }

@@ -1,7 +1,6 @@
 package activities;
 
 import android.app.Activity;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,13 +15,16 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Random;
 
+import adapters.LinesAdapter;
+import application.SharedPreferencesUtil;
 import ctp_ticket_generator.android.andreibacalu.com.ctpticketgenerator.R;
+import others.SmsContainer;
+import others.SmsInserter;
 import tasks.async.InsertSmsAsyncTask;
+import views.AutofitRecyclerView;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements View.OnClickListener, SmsInserter /*FIXME: think of a better place to implement this interface!!!*/{
 
     public static final String ADDRESS_KEY = "address";
     public static final String ADDRESS_VALUE = "7479";
@@ -41,8 +43,11 @@ public class MainActivity extends Activity {
 
     private EditText generateInput;
     private Button generateButton;
+    private AutofitRecyclerView generatedLines;
+    private LinesAdapter generatedLinesAdapter;
 
     private String defaultSmsApp;
+    private String line;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,12 +57,27 @@ public class MainActivity extends Activity {
         initViewListeners();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        generatedLinesAdapter.setLines(SharedPreferencesUtil.getInstance().getLines());
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        SharedPreferencesUtil.getInstance().setLines(generatedLinesAdapter.getLines());
+    }
+
     private void initViews() {
         generateInput = (EditText) findViewById(R.id.generate_input);
         generateButton = (Button) findViewById(R.id.generate_button);
-        if (generateButton == null && generateInput == null) {
-            finish();
-        }
+        generatedLinesAdapter = new LinesAdapter();
+        generatedLinesAdapter.setSmsInserter(this);
+        generatedLines = (AutofitRecyclerView) findViewById(R.id.generated_lines);
+        generatedLines.setAdapter(generatedLinesAdapter);
+        Button b = new Button(this);
+        generatedLines.setColumnWidth((int) (2 * b.getPaddingRight() + b.getPaint().measureText("WWW")));
     }
 
     private void initViewListeners() {
@@ -79,26 +99,31 @@ public class MainActivity extends Activity {
                 }
             }
         });
-        generateButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                insertSms();
-            }
-        });
+        generateButton.setOnClickListener(this);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_CODE_SMS_DEFAULT) {
             if (resultCode == RESULT_OK) {
-                performInsertAsync();
+                performInsertAsync(this.line);
             } else {
                 // TODO: some nice UI message
             }
         }
     }
 
-    private void insertSms() {
+    @Override
+    public void onClick(View v) {
+        String line = generateInput.getText().toString().toUpperCase();
+        insertSms(line);
+        if (v.getId() == generateButton.getId()) {
+            generatedLinesAdapter.addLine(line);
+        }
+    }
+
+    public void insertSms(String line) {
+        this.line = line;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             defaultSmsApp = Telephony.Sms.getDefaultSmsPackage(this);
             if (!getPackageName().equals(defaultSmsApp)) {
@@ -107,15 +132,15 @@ public class MainActivity extends Activity {
                 startActivityForResult(intent, REQUEST_CODE_SMS_DEFAULT);
             }
         } else {
-            performInsertAsync();
+            performInsertAsync(line);
         }
     }
 
-    private void performInsertAsync() {
+    private void performInsertAsync(String line) {
         InsertSmsAsyncTask insertSmsAsyncTask = new InsertSmsAsyncTask(this, defaultSmsApp);
         SmsContainer[] smsContainers = new SmsContainer[2];
-        smsContainers[0] = new SmsContainer("7479", generateInput.getText().toString().toUpperCase(), System.currentTimeMillis(), TYPE_OUTGOING);
-        smsContainers[1] = new SmsContainer("7479", generateInput.getText().toString().toUpperCase(), System.currentTimeMillis() + 10, TYPE_INCOMMING);
+        smsContainers[0] = new SmsContainer(ADDRESS_VALUE, line, System.currentTimeMillis(), TYPE_OUTGOING);
+        smsContainers[1] = new SmsContainer(ADDRESS_VALUE, line, System.currentTimeMillis() + 10, TYPE_INCOMMING);
         insertSmsAsyncTask.execute(smsContainers);
     }
 
@@ -139,91 +164,5 @@ public class MainActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    public static class SmsContainer {
-
-        private String address;
-        private String lineNumber;
-        private String message;
-        private long date;
-        private int type;
-
-        public SmsContainer(String address, String lineNumber, long date, int type) {
-            this.address = address;
-            this.lineNumber = lineNumber;
-            this.date = date;
-            this.type = type;
-        }
-
-        //FIXME: create a factory method, constructor is confusing!!!
-        public SmsContainer(String address, long date, int type, String message) {
-            this.address = address;
-            this.message = message;
-            this.date = date;
-            this.type = type;
-        }
-
-        public SmsContainer addAddress(String address) {
-            this.address = address;
-            return this;
-        }
-
-        public SmsContainer addLineNumber(String lineNumber) {
-            this.lineNumber = lineNumber;
-            return this;
-        }
-
-        public SmsContainer addMessage(String message) {
-            this.message = message;
-            return this;
-        }
-
-        public SmsContainer addDate(long date) {
-            this.date = date;
-            return this;
-        }
-
-        public SmsContainer addType(int type) {
-            this.type = type;
-            return this;
-        }
-
-        public ContentValues toContentValues() {
-            ContentValues contentValues = new ContentValues();
-            addContentValue(contentValues, ADDRESS_KEY, address, ADDRESS_VALUE);
-            contentValues.put(DATE_KEY, date);
-            contentValues.put(READ_KEY, READ_VALUE);
-            contentValues.put(TYPE_KEY, type);
-            completeWithMessage(contentValues);
-            return contentValues;
-        }
-
-        private void completeWithMessage(ContentValues contentValues) {
-            if (type == TYPE_INCOMMING) {
-                Date expirationDate = new Date(date + MINS_45);
-                addContentValue(contentValues, BODY_KEY, message, String.format(BODY_VALUE, lineNumber, timeformat.format(expirationDate), dateformat.format(expirationDate), generateRandom6Digits()));
-            } else {
-                addContentValue(contentValues, BODY_KEY, lineNumber, null);
-            }//FIXME: else illegal argument!!!
-        }
-
-        private String generateRandom6Digits() {
-            Random random = new Random(System.currentTimeMillis());
-            StringBuilder sb = new StringBuilder(6);
-            sb.append(random.nextInt(9) + 1);
-            for (int i = 0; i < 5; i++) {
-                sb.append(random.nextInt(10));
-            }
-            return sb.toString();
-        }
-
-        private void addContentValue(ContentValues contentValue, String key, String value, String defaultValue) {
-            if (!TextUtils.isEmpty(value)) {
-                contentValue.put(key, value);
-            } else {
-                contentValue.put(key, defaultValue);
-            }
-        }
     }
 }
