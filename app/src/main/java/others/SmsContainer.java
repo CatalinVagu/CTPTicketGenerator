@@ -58,7 +58,7 @@ public class SmsContainer {
 
     public ContentValues toContentValues() {
         ContentValues contentValues = new ContentValues();
-        addContentValue(contentValues, MainActivity.ADDRESS_KEY, address, MainActivity.ADDRESS_VALUE);
+        addContentValue(contentValues, MainActivity.ADDRESS_KEY, address, MainActivity.ADDRESS_SENDER_VALUE);
         contentValues.put(MainActivity.DATE_KEY, date);
         contentValues.put(MainActivity.READ_KEY, MainActivity.READ_VALUE);
         contentValues.put(MainActivity.TYPE_KEY, type);

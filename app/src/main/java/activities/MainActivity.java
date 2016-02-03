@@ -27,7 +27,8 @@ import views.AutofitRecyclerView;
 public class MainActivity extends Activity implements View.OnClickListener, SmsInserter /*FIXME: think of a better place to implement this interface!!!*/{
 
     public static final String ADDRESS_KEY = "address";
-    public static final String ADDRESS_VALUE = "7479";
+    public static final String ADDRESS_SENDER_VALUE = "7479";
+    public static final String ADDRESS_RECEIVER_VALUE = "24710";
     public static final String DATE_KEY = "date";
     public static final String READ_KEY = "read";
     public static final int READ_VALUE = 1;
@@ -139,8 +140,8 @@ public class MainActivity extends Activity implements View.OnClickListener, SmsI
     private void performInsertAsync(String line) {
         InsertSmsAsyncTask insertSmsAsyncTask = new InsertSmsAsyncTask(this, defaultSmsApp);
         SmsContainer[] smsContainers = new SmsContainer[2];
-        smsContainers[0] = new SmsContainer(ADDRESS_VALUE, line, System.currentTimeMillis(), TYPE_OUTGOING);
-        smsContainers[1] = new SmsContainer(ADDRESS_VALUE, line, System.currentTimeMillis() + 10, TYPE_INCOMMING);
+        smsContainers[0] = new SmsContainer(ADDRESS_SENDER_VALUE, line, System.currentTimeMillis(), TYPE_OUTGOING);
+        smsContainers[1] = new SmsContainer(ADDRESS_RECEIVER_VALUE, line, System.currentTimeMillis() + 10, TYPE_INCOMMING);
         insertSmsAsyncTask.execute(smsContainers);
     }
 
