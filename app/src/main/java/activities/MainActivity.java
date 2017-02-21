@@ -28,7 +28,7 @@ public class MainActivity extends Activity implements View.OnClickListener, SmsI
 
     public static final String ADDRESS_KEY = "address";
     public static final String ADDRESS_SENDER_VALUE = "7479";
-    public static final String ADDRESS_RECEIVER_VALUE = "24710";
+    public static final String ADDRESS_RECEIVER_VALUE = "7479";
     public static final String DATE_KEY = "date";
     public static final String READ_KEY = "read";
     public static final int READ_VALUE = 1;
