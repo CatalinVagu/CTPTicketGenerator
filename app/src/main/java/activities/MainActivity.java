@@ -36,7 +36,7 @@ public class MainActivity extends Activity implements View.OnClickListener, SmsI
     public static final int TYPE_INCOMMING = 1;
     public static final int TYPE_OUTGOING = 2;
     public static final String BODY_KEY = "body";
-    public static final String BODY_VALUE = "Biletul pentru linia %1$s a fost activat. Valabil pana la %2$s in %3$s. Cost total:0.50 EUR+Tva. Cod confirmare:%4$s.";
+    public static final String BODY_VALUE = "Biletul pentru linia %1$s a fost activat. Valabil pana la %2$s in %3$s. Cost total:0.60 EUR+Tva. Cod confirmare:%4$s.";
     public static final long MINS_45 = 45 * 60 * 1000;
     public static final SimpleDateFormat timeformat = new SimpleDateFormat("HH:mm");
     public static final SimpleDateFormat dateformat = new SimpleDateFormat("dd/MM/yyyy");
